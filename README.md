@@ -43,3 +43,6 @@ A single function that fell out of the reset functionality for Grid. Creates a
 Signal where events that match a predicate are followed by another event. This
 allows the Clear event to propagate without leaving the user stuck in a
 meaningless "Clear mode" by switching back to Toggle mode.
+
+### Fade
+A library for morphing colors and shapes into other colors and shapes.
