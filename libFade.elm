@@ -1,23 +1,24 @@
 module Fade where
 import Window
 
-{-| Linear interpolation `frac` distance between `a` and `b`, where `0 <= frac
-<= 1` -}
-interpolateLin : Float -> Float -> Float -> Float
-interpolateLin a b frac = a + frac * (b - a)
+data Ease = Linear | SineOut
 
-{-| Sinusoidal interpolation `frac` distance between `a` and `b`, where `0 <=
-frac <= 1` -}
-interpolateSin : Float -> Float -> Float -> Float
-interpolateSin a b frac = interpolateLin a b <| sin (frac * turns 0.25)
+ease : Ease -> Float -> Float
+ease ef x = case ef of
+    Linear -> x
+    SineOut -> sin (x * turns 0.25)
+
+{-| Interpolation `frac` distance between `a` and `b`, where `0 <= frac <= 1`.-}
+interpolate : Ease -> Float -> Float -> Float -> Float
+interpolate ef a b frac = a + ease ef frac * (b - a)
 
 {-| Interpolation between colors. -}
 interpolateColor : Color -> Color -> Float -> Color
 interpolateColor (Color r1 g1 b1 a1) (Color r2 g2 b2 a2) frac = Color
-    (truncate (interpolateLin (toFloat r1) (toFloat r2) frac))
-    (truncate (interpolateLin (toFloat g1) (toFloat g2) frac))
-    (truncate (interpolateLin (toFloat b1) (toFloat b2) frac))
-    (interpolateLin a1 a2 frac)
+    (truncate (interpolate Linear (toFloat r1) (toFloat r2) frac))
+    (truncate (interpolate Linear (toFloat g1) (toFloat g2) frac))
+    (truncate (interpolate Linear (toFloat b1) (toFloat b2) frac))
+    (interpolate Linear a1 a2 frac)
 
 {-| Count at a steady rate from 0 to 1 over the amount of time given each time
 the input signal changes -}
