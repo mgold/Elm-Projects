@@ -19,20 +19,12 @@ interpolateColor (Color r1 g1 b1 a1) (Color r2 g2 b2 a2) frac = Color
     (truncate (interpolateLin (toFloat b1) (toFloat b2) frac))
     (interpolateLin a1 a2 frac)
 
--- generalized over time
-follow : Time -> (a -> Bool) -> a -> Signal a -> Signal a
-follow dt pred follower sig = let
-    leadersig = keepIf pred follower sig
-    followsig = delay dt (sampleOn leadersig (constant follower))
-  in merge followsig sig
-
 {-| Count at a steady rate from 0 to 1 over the amount of time given each time
 the input signal changes -}
 fade : Time -> Signal a -> Signal Float
 fade dt trig = let
     plusReset t acc = if t == 0 then 0 else acc + t
-    active = follow dt id False <| lift (\_ -> True) trig
-    clock = foldp plusReset 0 (fpsWhen 50 active)
+    clock = foldp plusReset 0 (fpsWhen 50 (since dt trig))
                in (\t -> inMilliseconds t / inMilliseconds dt) <~ clock
 
 -- Todo: go both ways (require input to be Signal Bool?)
