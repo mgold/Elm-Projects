@@ -1,5 +1,6 @@
 module Fade where
 import Window
+import Mouse
 import Either (Right)
 
 data Ease = Linear | SineIn | SineOut | SineInOut
@@ -48,26 +49,32 @@ easeShape ef a b frac = case (a.form,b.form) of
 the input signal changes -}
 fade : Time -> Signal a -> Signal Float
 fade dt trig = let
-    plusReset t acc = if t == 0 then 0 else acc + t
+    plusReset t acc = if t == 0 then 0 else t + acc
     active = dt `since` trig
-    clock = foldp plusReset 0 (fpsWhen 50 active)
+    clock = foldp plusReset 0 (fpsWhen 30 active)
+    time t = inMilliseconds t / inMilliseconds dt
     finalOne = (\x -> if x then 0 else 1) <~ keepIf not True active
-       in merge finalOne ((\t -> inMilliseconds t / inMilliseconds dt) <~ clock)
+       in merge finalOne (lift time clock |> dropIf ((<) 1) 0)
+
+{-| Each time the input signal changes, count either from either 0 to 1 or 1 to
+0 over the amount of time given. Counting starts at 0 and then switches each
+time. -}
+fadeCycle : Time -> Signal a -> Signal Float
+fadeCycle dt trig = let
+    fracs = fade dt trig
+    prev = foldp (\x (y,_) -> (x,y)) (0,0) fracs |> lift snd
+    invert = foldp (\b s -> if b then not s else s) False (lift2 (<) fracs prev)
+    f = (\i frc -> if i then 1-frc else frc) <~ invert
+        in merge (constant 0) (sampleOn f (f ~ fracs))
 
 {-| Fade between Colors over a Time when the input signal changes. -}
 fadeColor : Ease -> Color -> Color -> Time -> Signal Bool -> Signal Color
-fadeColor ef c1 c2 dt trig = let
-    trues  = easeColor ef c1 c2 <~ fade dt (keepIf id True trig)
-    falses = easeColor ef c2 c1 <~ fade dt (keepIf not False trig)
-        in merge trues falses
+fadeColor ef c1 c2 dt trig = easeColor ef c1 c2 <~ fadeCycle dt trig
 
 {-| Fade between two shapes. The two shapes must support easing (see
 `easeShape`). -}
-fadeShape : Form -> Form -> Time -> Signal Bool -> Signal Form
-fadeShape a b dt trig = let
-    trues  = easeShape Linear a b <~ fade dt (keepIf id True trig)
-    falses = easeShape Linear b a <~ fade dt (keepIf not False trig)
-        in merge trues falses
+fadeShape : Ease -> Form -> Form -> Time -> Signal a -> Signal Form
+fadeShape ef a b dt trig = easeShape ef a b <~ fadeCycle dt trig
 
 -- Testing code
 -- main = asText <~ fade (0.8*second) (fps 0.5)
@@ -80,12 +87,17 @@ main = let trues = (\_->True) <~ fps 0.5
        in bg <~ Window.dimensions ~ fadeColor blue red second trig
 --}
 
-{--}
-main = let a = square 50 |> filled red |> move (-40, -20)
-           b = rect 30 60 |> filled blue |> move (20, 10)
+main = let a = square 50 |> filled red |> move (-300, -20)
+           b = rect 30 60 |> filled blue |> move (300, 10)
            b' = rect 30 60 |> outlined (solid blue) |> move (20, 10)
-           trues = (\_->True) <~ fps 0.333
-           falses = (\_->False) <~ delay second trues
-           trig = merge trues falses
-     in (\s -> collage 300 300 [s]) <~ fadeShape a b second trig
---}
+           dt = 2*second
+           trig = Mouse.clicks
+       in (\s -> collage 800 300 [ traced (solid black) [(-325, 5),
+                                                         (-325, -45),
+                                                         (-275, -45)]
+                                 , traced (solid black) [(285, 40),
+                                                         (315, 40),
+                                                         (315, -20)]
+                                , s])
+       <~ fadeShape SineInOut a b dt trig
+
