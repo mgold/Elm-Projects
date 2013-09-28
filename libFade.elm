@@ -2,12 +2,14 @@ module Fade where
 import Window
 import Either (Right)
 
-data Ease = Linear | SineOut
+data Ease = Linear | SineIn | SineOut | SineInOut
 
 ease : Ease -> Float -> Float
 ease ef x = case ef of
     Linear -> x
-    SineOut -> sin (x * turns 0.25)
+    SineIn -> sin ((x-1) * turns 0.25) + 1 -- start slow
+    SineOut -> sin (x * turns 0.25) -- end slow
+    SineInOut -> (sin ((2*x-1) * turns 0.25) + 1) / 2
 
 {-| Interpolation `frac` distance between `a` and `b`, where `0 <= frac <= 1`.-}
 -- In actuallity, numbers are Floats, still waiting on implicit coercion.
