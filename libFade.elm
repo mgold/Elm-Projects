@@ -87,17 +87,10 @@ main = let trues = (\_->True) <~ fps 0.5
        in bg <~ Window.dimensions ~ fadeColor blue red second trig
 --}
 
-main = let a = square 50 |> filled red |> move (-300, -20)
-           b = rect 30 60 |> filled blue |> move (300, 10)
+main = let a = square 50 |> filled red |> move (-50, -30)
+           b = rect 30 60 |> filled blue |> move (70, 20)
            b' = rect 30 60 |> outlined (solid blue) |> move (20, 10)
-           dt = 2*second
+           dt = second
            trig = Mouse.clicks
-       in (\s -> collage 800 300 [ traced (solid black) [(-325, 5),
-                                                         (-325, -45),
-                                                         (-275, -45)]
-                                 , traced (solid black) [(285, 40),
-                                                         (315, 40),
-                                                         (315, -20)]
-                                , s])
-       <~ fadeShape SineInOut a b dt trig
+       in (\s -> collage 300 300 [s]) <~ fadeShape SineInOut a b dt trig
 
