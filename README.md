@@ -9,6 +9,10 @@ JavaScript, and runs in the browser.
 This repo includes both standalone demonstrations / applets and reuseable
 library code.
 
+Also included is a subjective and non-exhaustive list of improvements I'd like
+to see in Elm, `plans.md`. Some ideas have ready-to-go implementations; some
+are pipe dreams.
+
 ## Standalone Programs
 ### Gyrations
 A non-interactive screensaver, featuring rotating orbs of changing color.
