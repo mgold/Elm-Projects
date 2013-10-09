@@ -1,48 +1,50 @@
 module Align where
+{-| Align forms to the horizontal or vertical lines of their bounding box.
 
-{-| Align Forms to horizontal or vertical lines.
+Function names are chosen with the expectation that this module will imported
+qualified, e.g. `Align.top`.
 
 # Horizontal
-@docs alignTop, alignBottom, alignHoriz
+@docs top, bottom, horiz
 
 # Vertical
-@docs alignLeft, alignRight, alignVert
+@docs left, right, vert
 -}
 
-{-| Align Forms with the uppermost Form. -}
-alignTop : [Form] -> [Form]
-alignTop frms = let top = maximum <| map .y frms
-                in map (\frm -> {frm | y <- top}) frms
+{-| Align forms with the uppermost form. -}
+top : [Form] -> [Form]
+top frms = let t = maximum <| map .y frms
+           in map (\frm -> {frm | y <- t}) frms
 
-{-| Align Forms with the bottommost Form. -}
-alignBottom : [Form] -> [Form]
-alignBottom frms = let bot = minimum <| map .y frms
-                in map (\frm -> {frm | y <- bot}) frms
+{-| Align forms with the bottommost form. -}
+bottom : [Form] -> [Form]
+bottom frms = let bot = minimum <| map .y frms
+              in map (\frm -> {frm | y <- bot}) frms
 
-{-| Align Forms with the leftmost Form. -}
-alignLeft : [Form] -> [Form]
-alignLeft frms = let left = minimum <| map .x frms
-                in map (\frm -> {frm | x <- left}) frms
+{-| Align forms with the leftmost form. -}
+left : [Form] -> [Form]
+left frms = let lft = minimum <| map .x frms
+            in map (\frm -> {frm | x <- lft}) frms
 
-{-| Align Forms with the rightmost Form. -}
-alignRight : [Form] -> [Form]
-alignRight frms = let right = maximum <| map .x frms
-                in map (\frm -> {frm | x <- right}) frms
+{-| Align forms with the rightmost form. -}
+right : [Form] -> [Form]
+right frms = let rgt = maximum <| map .x frms
+            in map (\frm -> {frm | x <- rgt}) frms
 
-{-| Align Forms horizontally, halfway between the uppermost and bottommost
- Forms. -}
-alignHoriz : [Form] -> [Form]
-alignHoriz frms = let top = maximum <| map .y frms
-                      bot = minimum <| map .y frms
-                      mid = (top + bot) / 2
-                  in map (\frm -> {frm | y <- mid}) frms
+{-| Align forms horizontally, halfway between the uppermost and bottommost
+ forms. -}
+horiz : [Form] -> [Form]
+horiz frms = let t = maximum <| map .y frms
+                 bot = minimum <| map .y frms
+                 mid = (t + bot) / 2
+             in map (\frm -> {frm | y <- mid}) frms
 
-{-| Align Forms vertically, halfway between the leftmost and rightmost Forms. -}
-alignVert : [Form] -> [Form]
-alignVert frms = let right = maximum <| map .x frms
-                     left= minimum <| map .x frms
-                     mid = (right + left) / 2
-                 in map (\frm -> {frm | x <- mid}) frms
+{-| Align forms vertically, halfway between the leftmost and rightmost Forms. -}
+vert : [Form] -> [Form]
+vert frms = let rgt = maximum <| map .x frms
+                lft= minimum <| map .x frms
+                mid = (rgt + lft) / 2
+            in map (\frm -> {frm | x <- mid}) frms
 
 {-- } --Testing code
 
@@ -54,5 +56,5 @@ circles =
     , circle 20 |> filled black
     ]
 
-main = collage 600 600 <| [ group circles |> alpha 0.5 ] ++ alignHoriz circles
+main = collage 600 600 <| [ group circles |> alpha 0.5 ] ++ horiz circles
 --}

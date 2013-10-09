@@ -40,7 +40,11 @@ The alternate implementation of `movePolar` is especially promising for
 inclusion in the standard libraries.
 
 ### Align
-A library for aligning `Form`s along their centerpoints. I'll do distribute one day...
+A library for aligning `Form`s along their centerpoints or extrema.
+
+## Distribute
+A library for distributing `Form`s evenly within their bounding box, or on a
+circle.
 
 ### Follow
 A single function that fell out of the reset functionality for Grid. Creates a
