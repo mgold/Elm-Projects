@@ -12,6 +12,8 @@ curColor = (\h -> hsv (h/1800) 1 1) <~ foldp (+) 0 (fps 50)
 
 -- Don't display spokes shorter than
 cutoff = 20
+-- Don't display when mouse is this close to an edge
+edge = 10
 
 -- Part of the Polar Library
 mousePolar : Signal (Float,Float)
@@ -47,7 +49,9 @@ drawSpoke ((r,t),c) =
 scene : (Int,Int) -> (Int, Int) -> (Float, Float) -> Color -> [Spoke] -> Float -> Element
 scene (w,h) (x,y) (r,t) c spks ang = collage w h <|
     if | x == 0 && y == 0 -> [rotSpoke (w,h) ang c |> drawSpoke]
-       | r < cutoff -> map drawSpoke (reverse spks)
+       | r < cutoff ||
+         x < edge || y < edge ||
+         x + edge > w || y + edge > h -> map drawSpoke (reverse spks)
        | otherwise  -> map drawSpoke (reverse (((r,t),c)::spks))
 
 main = scene <~ Window.dimensions ~ Mouse.position ~ mousePolar ~ curColor ~ spokes ~ angle
