@@ -25,19 +25,29 @@ spokes : Signal [Spoke]
 spokes = foldp (::) [] (sampleOn Mouse.clicks (lift2 (,) mousePolar curColor))
     |> dropWhen (lift (\(r,_) -> r < cutoff) mousePolar) []
 
+-- initial rotating spoke
+angle : Signal Float
+angle = foldp (+) 0 <| lift ((*) 0.001) (fpsWhen 20 (isEmpty <~ spokes))
+
+rotSpoke : (Int, Int) -> Float -> Color -> Spoke
+rotSpoke (w,h) ang c = let
+    r = min w h |> toFloat |> (*) 0.3 |> (*) (sin (0.8*ang) + 0.5)
+        in ((r, ang), c)
+
 -- Display
 
 drawSpoke : Spoke -> Form
 drawSpoke ((r,t),c) = 
-  group [polygon [(0,-20),(0,20),(truncate r,5),(truncate r,-5)] |> filled c
+  group [polygon [(0,-20),(0,20),(r,5),(r,-5)] |> filled c
           , oval 20 40 |> filled c
           , circle 5 |> filled c |> moveX r
           ]
     |> rotate t
 
-scene : (Int,Int) -> (Float, Float) -> Color -> [Spoke] -> Element
-scene (w,h) (r,t) c spks =
-  collage w h <| if r < cutoff then map drawSpoke (reverse spks)
-                 else map drawSpoke (reverse (((r,t),c)::spks))
+scene : (Int,Int) -> (Int, Int) -> (Float, Float) -> Color -> [Spoke] -> Float -> Element
+scene (w,h) (x,y) (r,t) c spks ang = collage w h <|
+    if | x == 0 && y == 0 -> [rotSpoke (w,h) ang c |> drawSpoke]
+       | r < cutoff -> map drawSpoke (reverse spks)
+       | otherwise  -> map drawSpoke (reverse (((r,t),c)::spks))
 
-main = scene <~ Window.dimensions ~ mousePolar ~ curColor ~ spokes
+main = scene <~ Window.dimensions ~ Mouse.position ~ mousePolar ~ curColor ~ spokes ~ angle
