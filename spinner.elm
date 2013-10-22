@@ -25,7 +25,7 @@ clock = foldp (+) 0 (fps 50)
 
 angle : Signal Float
 angle = let k = 1.2 -- rotation speed constant
-        in (.) (\x -> x*k) inSeconds <~ clock
+        in (\x -> inSeconds x*k) <~ clock
 
 -- Part of the Polar Library
 mousePolar : Signal RT
@@ -67,7 +67,7 @@ update = let drawPaint : RT -> Color -> Float -> Form
 
 drawing : Signal [Form]
 drawing = let
-    fade : Form -> Form        -- fade rate constant
+    fade : Form -> Form          -- fade rate constant
     fade form = alpha (form.alpha - 0.005) form
     prune : [Form] -> [Form]                 -- min alpha constant
     prune forms = filter (\form -> form.alpha > 0.02) forms
@@ -82,21 +82,16 @@ drawing = let
 
 scene : WH -> Float -> [Form] -> Element
 scene (w,h) ang ps = let
-    r = radius (w,h)
-    sgrey = (solid grey) --hack around language oddity
-
-  in collage w h (
-                 [ circle (toFloat r)
-                    |> filled black
-                 , circle (toFloat r-5)
-                    |> outlined {sgrey | width <- 10, dashing <- [80,80] }
-                    |> rotate ang
-                 , circle 2
-                    |> filled grey
-                 ] ++ [group ps |> rotate ang]
-                 )
-
-
+        r = radius (w,h)
+        sgrey = (solid grey) --hack around language oddity
+  in collage w h <| [ circle (toFloat r)
+                      |> filled black
+                   , circle (toFloat r-5)
+                      |> outlined {sgrey | width <- 10, dashing <- [80,80] }
+                      |> rotate ang
+                   , circle 2
+                      |> filled grey
+                   ] ++  [group ps |> rotate ang]
 
 main = layers <~ combine
                  [scene <~ Window.dimensions
